@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "name": "张伟",
+    "gender": "男",
+    "dob": "1990-05-21",
+    "phone": "13800001234",
+    "email": "zhangwei@example.com",
+    "address": {
+      "city": "北京市",
+      "district": "朝阳区",
+      "street": "东三环北路"
+    }
+  },
+  {
+    "id": 2,
+    "name": "李娜",
+    "gender": "女",
+    "dob": "1985-12-11",
+    "phone": "13600005678",
+    "email": "lina@example.com",
+    "address": {
+      "city": "上海市",
+      "district": "浦东新区",
+      "street": "世纪大道"
+    }
+  },
+  {
+    "id": 3,
+    "name": "黄婷",
+    "gender": "女",
+    "dob": "1995-03-05",
+    "phone": "13900009876",
+    "email": "huangting@example.com",
+    "address": {
+      "city": "广州市",
+      "district": "天河区",
+      "street": "中山大道"
+    }
+  },
+  {
+    "id": 4,
+    "gender": "男",
+    "dob": "1992-07-15",
+    "phone": "13500003456",
+    "email": "wangwu@example.com",
+    "address": {
+      "city": "深圳市",
+      "district": "南山区",
+      "street": "科技大道"
+    }
+  },
+  {
+    "id": 5,
+    "gender": "女",
+    "dob": "1989-01-01",
+    "phone": "13700007890",
+    "email": "liuyan@example.com",
+    "address": {
+      "city": "杭州市",
+      "district": "西湖区", 
+      "street": "中华大道"
+    }
+  }
+]
