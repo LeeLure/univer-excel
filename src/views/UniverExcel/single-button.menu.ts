@@ -1,7 +1,7 @@
 import type { IMenuButtonItem } from '@univerjs/ui';
 import { MenuItemType } from '@univerjs/ui';
 
-
+import {openDialog} from './actions'
 
 import type { ICommand, IAccessor } from '@univerjs/core';
 import { CommandType } from '@univerjs/core';
@@ -9,14 +9,8 @@ import { CommandType } from '@univerjs/core';
 export const SingleButtonOperation: ICommand = {
   id: 'custom-menu.operation.single-button',
   type: CommandType.OPERATION,
-  handler: async (accessor: IAccessor) => {
-    console.log('Single button operation',accessor,window.univerAPI);
-    const url = import.meta.env.VITE_APP_UNIVER_ENDPOINT + '/json/test.json';
-
-    window.univerAPI.importXLSXToSnapshotAsync(url).then((data) => {
-    console.log(data)
-  })
-    // alert('Single button operationssss');
+  handler: async () => {
+    openDialog()
     return true;
   },
 };

@@ -25,7 +25,7 @@ import '@univerjs-pro/exchange-client/facade';
 // 历史
 import '@univerjs-pro/edit-history-viewer/lib/index.css';
 
-import { createUniver, defaultTheme,  LocaleType, merge, UniverInstanceType, type IWorkbookData, } from '@univerjs/presets'
+import { createUniver, defaultTheme, LocaleType, merge, UniverInstanceType, LogLevel, IAuthzIoService, IUndoRedoService, type IWorkbookData, type FUniver } from '@univerjs/presets'
 
 // 核心功能
 import { UniverSheetsCorePreset } from '@univerjs/presets/preset-sheets-core'
@@ -70,10 +70,10 @@ import UniverPresetSheetsDrawingZhCN from '@univerjs/presets/preset-sheets-drawi
 import { UniverEditHistoryLoaderPlugin } from '@univerjs-pro/edit-history-loader';
 import UniverPresetSheetsEditHistoryViewerZhCN from '@univerjs-pro/edit-history-viewer/locale/zh-CN';
 
-import { FUniver } from '@univerjs/core/facade';
-import type {CreateUniverOptions} from './type'
+// import { FUniver } from '@univerjs/core/facade';
+import type { CreateUniverOptions } from './type'
 
-import {UniverSheetsCustomMenuPlugin} from './plugin'
+import { UniverSheetsCustomMenuPlugin } from './plugin'
 
 // import type { FUniver } from '@univerjs/presets'
 
@@ -82,25 +82,26 @@ import {UniverSheetsCustomMenuPlugin} from './plugin'
  * 是否开启协同编辑，默认开启，可通过环境变量 VITE_APP_UNIVER_COLLABORATION 控制
  * @returns boolean
  */
-function enabledCollaboration(){
+function enabledCollaboration() {
   return import.meta.env.VITE_APP_UNIVER_COLLABORATION === 'true' ? true : undefined
 }
 
 /**
  * 创建 Univer 配置
  * @param enabled - 是否开启协同编辑
- * @param domId - dom id or dom element
+ * @param domId - dom id 
  * @returns Univer 配置
  */
-function createUniverConfig(enabled:true | undefined, domId?: string | HTMLElement):CreateUniverOptions{
-  // 是否开启协同编辑
+function createUniverConfig(enabled: true | undefined, domId?: string): CreateUniverOptions {
+  domId = domId || 'app'
   const collaboration = enabled
 
   return {
-    // override: [
-    //   [IAuthzIoService, null],
-    //   [IUndoRedoService, null],
-    // ],
+    override: [
+      [IAuthzIoService, null],
+      [IUndoRedoService, null],
+    ],
+    logLevel: LogLevel.VERBOSE,
     locale: LocaleType.ZH_CN,
     locales: {
       [LocaleType.ZH_CN]: merge(
@@ -124,27 +125,41 @@ function createUniverConfig(enabled:true | undefined, domId?: string | HTMLEleme
     theme: defaultTheme,
     collaboration,
     presets: [
+      // 核心功能必须最先加载
       UniverSheetsCorePreset({
         container: domId,
         header: true,
+        toolbar: true,
         footer: true,
       }),
+      // 高级功能第二个加载
       UniverSheetsAdvancedPreset({
         useWorker: false,
         universerEndpoint: import.meta.env.VITE_APP_UNIVER_ENDPOINT,
         license: import.meta.env.VITE_APP_UNIVER_LICENSE,
       }),
+      // 协同编辑放在第三位
+      ...(collaboration ? [
+        UniverSheetsCollaborationPreset({
+          universerEndpoint: import.meta.env.VITE_APP_UNIVER_ENDPOINT,
+        })
+      ] : []),
+      // 其他功能按需加载
+      UniverSheetsDrawingPreset({ collaboration }),
       UniverSheetsConditionalFormattingPreset(),
       UniverSheetsDataValidationPreset(),
-      ...(collaboration ? [UniverSheetsCollaborationPreset()] : []),
-      UniverSheetsDrawingPreset({ collaboration }),
       UniverSheetsFindReplacePreset(),
       UniverSheetsSortPreset(),
       UniverSheetsFilterPreset(),
       UniverSheetsThreadCommentPreset(),
       UniverSheetsHyperLinkPreset(),
     ],
-    plugins: [UniverSheetsZenEditorPlugin, UniverSheetsCrosshairHighlightPlugin, UniverEditHistoryLoaderPlugin, UniverSheetsCustomMenuPlugin]
+    plugins: [
+      UniverSheetsCustomMenuPlugin,  // 直接使用插件类，不要包装成数组
+      UniverEditHistoryLoaderPlugin,
+      UniverSheetsZenEditorPlugin,
+      UniverSheetsCrosshairHighlightPlugin,
+    ]
   }
 }
 
@@ -154,8 +169,8 @@ function createUniverConfig(enabled:true | undefined, domId?: string | HTMLEleme
  * 2. 否则，创建一个新的表格
  * 3. 跳转到协同编辑页面
  */
-function createCollaborationSheet(){
-    const url = new URL(window.location.href);
+function createCollaborationSheet() {
+  const url = new URL(window.location.href);
   const unit = url.searchParams.get('unit');
 
   if (unit) {
@@ -192,56 +207,13 @@ function createCollaborationSheet(){
   }
 }
 
-// 从 URL 获取文件并转换为 File 对象的函数。
-// 这里使用 fetch API 直接获取文件，
-// 可能需要根据实际情况修改，
-// 比如文件地址的鉴权和跨域问题。
-async function fetchExcelFile(url: string): Promise<File | undefined> {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new File([blob], 'filename.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  } catch (error) {
-    console.error('Failed to fetch the file:', error);
+export function setupUniver(domId?: string): FUniver {
+  const { univerAPI } = createUniver(createUniverConfig(enabledCollaboration(), domId))
+
+  if (enabledCollaboration()) {
+    // Promise.resolve().then(() => createCollaborationSheet())
+    createCollaborationSheet()
   }
-}
-
-function customImport(file: string | File): Promise<IWorkbookData | undefined>{
-  // console.log('customImport',file)
-  fetchExcelFile('/test.json').then((file) => {
-    console.log(file)
-  })
-
-}
-
-function customImport2(file: string | File): Promise<string | undefined>{
-  console.log('customImport',file)
-  fetchExcelFile('/test.json').then((file) => {
-    console.log('customImport2',file)
-  })
-
-}
-
-/**
- * @param domId - domId 或者 dom 元素
- * @returns - UniverAPI
- */
-export function setupUniver(domId?: string | HTMLElement): FUniver {
-
-
-  const { univerAPI } = createUniver(createUniverConfig(enabledCollaboration(),domId))
-
-
-  createCollaborationSheet()
-
-  univerAPI.importXLSXToSnapshotAsync = (file: string | File): Promise<IWorkbookData | undefined> => customImport(file)
-
-  univerAPI.importXLSXToUnitIdAsync = (file: string | File): Promise<string | undefined> => customImport2(file)
-
-  // univerAPI.importXLSXToSnapshotAsync(file).then((data) => {
-  //   console.log(data)
-  // })
-  
 
   return univerAPI
 }

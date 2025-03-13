@@ -5,8 +5,13 @@ import './style.css'
 // import 'default-passive-events'
 
 import { createApp } from 'vue'
-
+import { setupStore } from './store'
 import App from './App.vue'
 
+(() => {
+  const app = createApp(App)
 
-createApp(App).mount('#app')
+  setupStore(app)
+
+  app.mount('#app')
+})()
