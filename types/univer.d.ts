@@ -1,4 +1,3 @@
-
 import type { FUniver } from '@univerjs/presets'
 
 declare global {
@@ -6,3 +5,5 @@ declare global {
     univerAPI: FUniver
   }
 }
+
+export {}

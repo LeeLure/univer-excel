@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import packageJson from './package.json'
 
 import Components from 'unplugin-vue-components/vite';
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
@@ -23,12 +24,25 @@ export default defineConfig(({ mode }) => {
       }
     },
 
+    define: {
+      'process.env.UNIVER_CLIENT_LICENSE': `"${env.VITE_APP_UNIVER_LICENSE}"`,
+      'process.env.UNIVER_VERSION': `"${packageJson.dependencies['@univerjs/presets']}"`,
+    },
+
     // 配置 src 为 @
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'src')
       },
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
+    },
+
+    worker: {
+      rollupOptions: {
+        output: {
+          entryFileNames: 'worker.js',
+        },
+      },
     },
 
 
@@ -50,7 +64,7 @@ export default defineConfig(({ mode }) => {
           /\.md$/ // .md
         ],
         imports: ['vue', 'pinia'],
-        dirs: ['src/store'],
+        dirs: ['src/store', 'src/hooks'],
         dts: './types/auto-imports.d.ts',
 
         eslintrc: {

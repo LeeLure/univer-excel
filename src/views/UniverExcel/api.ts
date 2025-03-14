@@ -2,7 +2,6 @@ import type { FUniver } from '@univerjs/presets'
 import { ScrollToCellCommand } from '@univerjs/presets/preset-sheets-core'
 import { Button, type ButtonProps } from 'ant-design-vue'
 import { createVNode, render, watch, ref } from 'vue'  // 添加 watch 和 ref
-import { useActiveWorkbookAndSheet } from './useActiveWorkbookAndSheet'
 
 interface BaseButtonHandlerOption {
   buttonInnerHTML: string
@@ -11,7 +10,7 @@ interface BaseButtonHandlerOption {
 }
 
 /** 基础按钮处理函数 */
-const baseButtonHandler = (option: BaseButtonHandlerOption) => {
+const baseButtonHandler = (option: BaseButtonHandlerOption): { buttonText: Ref<string>, updateButton: () => void } => {
   const { buttonInnerHTML, buttonAttr, handler } = option
   const $toolbar = document.getElementById('toolbar')!
   const buttonText = ref(buttonInnerHTML)
@@ -37,7 +36,7 @@ const baseButtonHandler = (option: BaseButtonHandlerOption) => {
 
   return {
     buttonText,
-    $buttonContainer,
+    /** 手动触发按钮更新 */
     updateButton  // 返回更新函数
   }
 }
@@ -45,23 +44,22 @@ const baseButtonHandler = (option: BaseButtonHandlerOption) => {
 /** 设置工作簿可编辑权限 */
 export async function setWorkbookEditablePermission() {
   const univerStore = useUniverStore()
-  const { enabledList } = storeToRefs(univerStore)
 
   const { buttonText, updateButton } = baseButtonHandler({
-    buttonInnerHTML: enabledList.value.enabledEdit ? '禁用编辑' : '启用编辑',
+    buttonInnerHTML: univerStore.enabledList.enabledEdit ? '禁用编辑' : '启用编辑',
     handler: async () => {
       univerStore.toggleEnabledEdit()
       const { activeWorkbook } = useActiveWorkbookAndSheet()
       const unitId = activeWorkbook.getId()
       const permission = activeWorkbook.getPermission()
       const workbookEditablePermission = permission.permissionPointsDefinition.WorkbookEditablePermission
-      permission.setWorkbookPermissionPoint(unitId, workbookEditablePermission, enabledList.value.enabledEdit)
+      permission.setWorkbookPermissionPoint(unitId, workbookEditablePermission, univerStore.enabledList.enabledEdit)
     }
   })
 
 
   // 监听状态变化并更新按钮
-  watch(() => enabledList.value.enabledEdit, (newValue) => {
+  watch(() => univerStore.enabledList.enabledEdit, (newValue) => {
     buttonText.value = newValue ? '禁用编辑' : '启用编辑'
     updateButton()  // 手动触发按钮更新
   }, { immediate: true })
@@ -69,23 +67,25 @@ export async function setWorkbookEditablePermission() {
 
 /** 设置工作簿可查看权限 */
 export function setWorkbookViewPermission() {
-  baseButtonHandler({
-    buttonInnerHTML: '是否可查看',
+  const univerStore = useUniverStore()
+
+  const { buttonText, updateButton } = baseButtonHandler({
+    buttonInnerHTML: univerStore.enabledList.enabledEdit ? '禁用查看' : '启用查看',
     handler: async () => {
-      const univerStore = useUniverStore()
-
       univerStore.toggleEnabledView()
-
       const { activeWorkbook } = useActiveWorkbookAndSheet()
-
       const unitId = activeWorkbook.getId(); // 获取工作簿 ID
       const permission = activeWorkbook.getPermission(); // 获取权限模块
-
       const workbookViewPermission = permission.permissionPointsDefinition.WorkbookViewPermission
       // unitId 是工作簿的 id, WorkbookViewPermission 是权限点位, false 表示该权限不可使用
       permission.setWorkbookPermissionPoint(unitId, workbookViewPermission, univerStore.enabledList.enabledView)
     }
   })
+  // 监听状态变化并更新按钮
+  watch(() => univerStore.enabledList.enabledView, (newValue) => {
+    buttonText.value = newValue ? '禁用查看' : '启用查看',
+      updateButton()  // 手动触发按钮更新
+  }, { immediate: true })
 }
 
 export function setupSetValue() {

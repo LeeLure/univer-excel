@@ -1,4 +1,3 @@
-import type { FUniver } from '@univerjs/presets'
 
 import {
   setupClearStyles,
@@ -26,8 +25,6 @@ import {
 } from './api'
 
 export function setupToolbar() {
-  const $toolbar = document.getElementById('toolbar')!
-  console.log('setupToolbar -> $toolbar', $toolbar)
 
   setupSetValue()
   setupSetValues()

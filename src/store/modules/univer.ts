@@ -37,4 +37,6 @@ export const useUniverStore = defineStore('univer', () => {
     setEnabledView,
     toggleEnabledView
   }
-})
+},
+  { persist: true }
+)

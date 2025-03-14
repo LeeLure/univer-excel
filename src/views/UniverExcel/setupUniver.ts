@@ -62,21 +62,19 @@ import sheetsZenEditorZhCN from '@univerjs/sheets-zen-editor/locale/zh-CN'
 import { UniverSheetsCrosshairHighlightPlugin } from '@univerjs/sheets-crosshair-highlight'
 import UniverSheetsCrosshairHighlightZhCN from '@univerjs/sheets-crosshair-highlight/locale/zh-CN'
 // 打印
-import { UniverSheetsAdvancedPreset } from '@univerjs/presets/preset-sheets-advanced';
+import { UniverSheetsAdvancedPreset } from '@univerjs/presets/preset-sheets-advanced'
 import UniverPresetSheetsAdvancedZhCN from '@univerjs/presets/preset-sheets-advanced/locales/zh-CN';
 import { UniverSheetsDrawingPreset } from '@univerjs/presets/preset-sheets-drawing'
 import UniverPresetSheetsDrawingZhCN from '@univerjs/presets/preset-sheets-drawing/locales/zh-CN'
 // 历史记录
-import { UniverEditHistoryLoaderPlugin } from '@univerjs-pro/edit-history-loader';
+// import { UniverEditHistoryLoaderPlugin } from '@univerjs-pro/edit-history-loader';
 import UniverPresetSheetsEditHistoryViewerZhCN from '@univerjs-pro/edit-history-viewer/locale/zh-CN';
 
-// import { FUniver } from '@univerjs/core/facade';
+// import workerURL from './worker.ts?worker&url'
+
 import type { CreateUniverOptions } from './type'
 
-import { UniverSheetsCustomMenuPlugin } from './plugin'
-
-// import type { FUniver } from '@univerjs/presets'
-
+import { UniverSheetsCustomMenuPlugin, setupUniverDebugPlugin } from './plugins'
 
 /**
  * 是否开启协同编辑，默认开启，可通过环境变量 VITE_APP_UNIVER_COLLABORATION 控制
@@ -95,6 +93,7 @@ function enabledCollaboration() {
 function createUniverConfig(enabled: true | undefined, domId?: string): CreateUniverOptions {
   domId = domId || 'app'
   const collaboration = enabled
+  const universerEndpoint = import.meta.env.VITE_APP_UNIVER_ENDPOINT
 
   return {
     override: [
@@ -125,38 +124,41 @@ function createUniverConfig(enabled: true | undefined, domId?: string): CreateUn
     theme: defaultTheme,
     collaboration,
     presets: [
-      // 核心功能必须最先加载
       UniverSheetsCorePreset({
         container: domId,
         header: true,
-        toolbar: true,
         footer: true,
+        /** 如果需要使用 worker，请将 UniverSheetsAdvancedPreset 的 useWorker 设置为 true */
+        // workerURL: new Worker(new URL(workerURL, import.meta.url), {
+        //   type: 'module',
+        // }),
       }),
-      // 高级功能第二个加载
+      UniverSheetsDrawingPreset({
+        collaboration,
+      }),
       UniverSheetsAdvancedPreset({
         useWorker: false,
-        universerEndpoint: import.meta.env.VITE_APP_UNIVER_ENDPOINT,
-        license: import.meta.env.VITE_APP_UNIVER_LICENSE,
+        // if univer page is not in the same domain as the server, you need to set the following parameters
+        universerEndpoint,
+        // if you want to use the no-limit business feature, you can get 30-day trial license from https://univer.ai/license
+        // eslint-disable-next-line node/prefer-global/process
+        license: import.meta.env.VITE_APP_UNIVER_LICENSE
       }),
-      // 协同编辑放在第三位
-      ...(collaboration ? [
-        UniverSheetsCollaborationPreset({
-          universerEndpoint: import.meta.env.VITE_APP_UNIVER_ENDPOINT,
-        })
-      ] : []),
-      // 其他功能按需加载
-      UniverSheetsDrawingPreset({ collaboration }),
+      UniverSheetsCollaborationPreset({
+        universerEndpoint,
+        univerContainerId: domId,
+      }),
       UniverSheetsConditionalFormattingPreset(),
       UniverSheetsDataValidationPreset(),
       UniverSheetsFindReplacePreset(),
       UniverSheetsSortPreset(),
       UniverSheetsFilterPreset(),
-      UniverSheetsThreadCommentPreset(),
+      UniverSheetsThreadCommentPreset({ collaboration }),
       UniverSheetsHyperLinkPreset(),
     ],
     plugins: [
       UniverSheetsCustomMenuPlugin,  // 直接使用插件类，不要包装成数组
-      UniverEditHistoryLoaderPlugin,
+      // UniverEditHistoryLoaderPlugin,
       UniverSheetsZenEditorPlugin,
       UniverSheetsCrosshairHighlightPlugin,
     ]
@@ -208,12 +210,14 @@ function createCollaborationSheet() {
 }
 
 export function setupUniver(domId?: string): FUniver {
-  const { univerAPI } = createUniver(createUniverConfig(enabledCollaboration(), domId))
+  const { univer, univerAPI } = createUniver(createUniverConfig(enabledCollaboration(), domId))
 
   if (enabledCollaboration()) {
     // Promise.resolve().then(() => createCollaborationSheet())
     createCollaborationSheet()
   }
+
+  setupUniverDebugPlugin(univer)
 
   return univerAPI
 }
