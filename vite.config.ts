@@ -3,8 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import packageJson from './package.json'
 
-import Components from 'unplugin-vue-components/vite';
-import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
+import Components from 'unplugin-vue-components/vite'
+import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 
 import AutoImport from 'unplugin-auto-import/vite'
 
@@ -45,7 +45,6 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-
     plugins: [
       vue(),
       Components({
@@ -53,6 +52,7 @@ export default defineConfig(({ mode }) => {
         resolvers: [
           AntDesignVueResolver({
             importStyle: false, // css in js
+            resolveIcons: true
           }),
         ],
       }),
@@ -66,6 +66,7 @@ export default defineConfig(({ mode }) => {
         imports: ['vue', 'pinia'],
         dirs: ['src/store', 'src/hooks'],
         dts: './types/auto-imports.d.ts',
+        resolvers: [AntDesignVueResolver({ importStyle: false, resolveIcons: true })],
 
         eslintrc: {
           enabled: false, // Default `false`

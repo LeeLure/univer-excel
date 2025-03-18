@@ -19,5 +19,7 @@ declare module 'vue' {
     ARadioGroup: typeof import('ant-design-vue/es')['RadioGroup']
     ASelect: typeof import('ant-design-vue/es')['Select']
     ASelectOption: typeof import('ant-design-vue/es')['SelectOption']
+    AUploadDragger: typeof import('ant-design-vue/es')['UploadDragger']
+    InboxOutlined: typeof import('@ant-design/icons-vue')['InboxOutlined']
   }
 }

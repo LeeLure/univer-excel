@@ -1,9 +1,10 @@
-import { Modal, message } from 'ant-design-vue';
 import Dialog from './dialog.vue';  // 请确保路径正确
-import { createVNode, ref } from 'vue';
-import type { FormInstance } from 'ant-design-vue'
-import type { FWorksheet, FRange } from '@univerjs/presets/lib/types/preset-sheets-core/index.js';
+import { createVNode } from 'vue';
+import { type FormInstance } from 'ant-design-vue'
+import type { FWorksheet } from '@univerjs/presets/lib/types/preset-sheets-core/index.js';
 import type { FormState } from './type'
+
+const { message } = useFeedback();
 
 /** 
  * @description 将 payload 字符串转换为对象
@@ -77,13 +78,15 @@ const getActiveSheet = (): FWorksheet => {
 
 /** 本地数据源请求 */
 const handleLocalRequest = (formState: FormState) => {
-  return new Promise(resolve => setTimeout(resolve, 3000));
+  return new Promise(resolve => {
+    resolve(JSON.parse(formState.fileData || '[]'))
+  })
 }
 
 export function openDialog() {
   const dialogRef = ref<FormInstance & { formState: FormState }>();
 
-  Modal.confirm({
+  AModal.confirm({
     title: '新增数据源',
     width: 500,
     okText: '确认',
@@ -103,7 +106,7 @@ export function openDialog() {
           const formData = dialogRef.value!.formState
 
           // 根据表单项数据进行请求
-          const result = formData?.dataSource === 'local' ? handleLocalRequest(formData) : await handleApiRequest(formData)
+          const result = formData?.dataSource === 'local' ? await handleLocalRequest(formData) : await handleApiRequest(formData)
 
           const activeSheet = getActiveSheet()
 
@@ -113,6 +116,8 @@ export function openDialog() {
             throw new Error('range is not defined')
 
           range.setValues(transformToValues(result as (string)[]))
+
+          message.success('操作成功')
           resolve(true)
         } catch (error) {
           console.log('error', error)

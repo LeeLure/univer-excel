@@ -11,6 +11,7 @@
     "reinstall": "rimraf node_modules && pnpm install"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
     "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@univerjs-pro/collaboration": "^0.6.4",

@@ -6,11 +6,13 @@
 // biome-ignore lint: disable
 export {}
 declare global {
+  const AModal: typeof import('ant-design-vue/es')['Modal']
   const EffectScope: typeof import('vue')['EffectScope']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const computed: typeof import('vue')['computed']
   const createApp: typeof import('vue')['createApp']
   const createPinia: typeof import('pinia')['createPinia']
+  const createVNode: typeof import('vue')['createVNode']
   const customRef: typeof import('vue')['customRef']
   const defineAsyncComponent: typeof import('vue')['defineAsyncComponent']
   const defineComponent: typeof import('vue')['defineComponent']
@@ -69,6 +71,7 @@ declare global {
   const useAttrs: typeof import('vue')['useAttrs']
   const useCssModule: typeof import('vue')['useCssModule']
   const useCssVars: typeof import('vue')['useCssVars']
+  const useFeedback: typeof import('../src/hooks/useFeedback')['useFeedback']
   const useId: typeof import('vue')['useId']
   const useModel: typeof import('vue')['useModel']
   const useSlots: typeof import('vue')['useSlots']

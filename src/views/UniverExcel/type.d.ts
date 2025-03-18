@@ -22,6 +22,8 @@ export type CreateUniverOptions = Partial<IUniverConfig> & {
 export interface FormState {
   /** 数据源 */
   dataSource: string
+  /** 导入文件后解析的数据 */
+  fileData?: string
   /** 请求地址 */
   url: string
   /** 请求方法 */

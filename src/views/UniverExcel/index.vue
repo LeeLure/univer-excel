@@ -8,7 +8,6 @@
 <script setup lang="ts">
 import { setupUniver } from './setupUniver'
 import { setupToolbar } from './setupToolbar'
-import { onMounted } from 'vue'
 
 onMounted(() => {
   initUniver()
